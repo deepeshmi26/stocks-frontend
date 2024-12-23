@@ -1,4 +1,4 @@
-import Main from '@/components/dashboard/main';
+import Main from './components';
 import { redirect } from 'next/navigation';
 import { getUserDetails, getUser } from '@/utils/supabase/queries';
 import { createClient } from '@/utils/supabase/server';

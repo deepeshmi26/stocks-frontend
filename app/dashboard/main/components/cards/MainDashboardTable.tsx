@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
+import { Value } from '@radix-ui/react-select';
 import {
   PaginationState,
   createColumnHelper,
@@ -24,7 +25,7 @@ import {
   getSortedRowModel,
   flexRender
 } from '@tanstack/react-table';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 
 type RowObj = {
@@ -54,24 +55,11 @@ function CheckTable(props: { tableData: any }) {
     return arrPageCount;
   };
   const columns = [
-    columnHelper.accessor('checked', {
-      id: 'checked',
-      header: () => (
-        <div className="flex max-w-max items-center">
-          <Checkbox />
-        </div>
-      ),
-      cell: (info: any) => (
-        <div className="flex max-w-max items-center">
-          <Checkbox defaultChecked={info.getValue()[1]} />
-        </div>
-      )
-    }),
-    columnHelper.accessor('email', {
-      id: 'email',
+    columnHelper.accessor('name', {
+      id: 'name',
       header: () => (
         <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-          EMAIL ADDRESS
+          Company
         </p>
       ),
       cell: (info) => (
@@ -80,11 +68,11 @@ function CheckTable(props: { tableData: any }) {
         </p>
       )
     }),
-    columnHelper.accessor('provider', {
-      id: 'provider',
+    columnHelper.accessor('recommendedFlag', {
+      id: 'recommendedFlag',
       header: () => (
         <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-          PROVIDER
+          Recommenation
         </p>
       ),
       cell: (info: any) => (
@@ -95,11 +83,24 @@ function CheckTable(props: { tableData: any }) {
         </div>
       )
     }),
-    columnHelper.accessor('created', {
-      id: 'created',
+    columnHelper.accessor('averageReturns', {
+      id: 'averageReturns',
       header: () => (
         <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-          CREATED
+          Average Returns
+        </p>
+      ),
+      cell: (info) => (
+        <p className="text-sm font-medium text-zinc-950 dark:text-white">
+          {info.getValue()}
+        </p>
+      )
+    }),
+    columnHelper.accessor('cmp', {
+      id: 'cmp',
+      header: () => (
+        <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+          Current Market Price
         </p>
       ),
       cell: (info: any) => (
@@ -110,47 +111,72 @@ function CheckTable(props: { tableData: any }) {
         </div>
       )
     }),
-    columnHelper.accessor('lastsigned', {
-      id: 'lastsigned',
+    columnHelper.accessor('targetPriceRange', {
+      id: 'tgtPrice',
       header: () => (
         <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-          LAST SIGN IN
+          Target price range
         </p>
       ),
       cell: (info) => (
         <p className="text-sm font-medium text-zinc-950 dark:text-white">
-          {info.getValue()}
+          {info.getValue().min}-{info.getValue().max}
         </p>
       )
     }),
-    columnHelper.accessor('uuid', {
-      id: 'uuid',
+
+    columnHelper.accessor('organizations', {
+      id: 'orgsCount',
       header: () => (
         <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-          USER UID
+          Orgs count
         </p>
       ),
       cell: (info) => (
         <p className="text-sm font-medium text-zinc-950 dark:text-white">
-          {info.getValue()}
+          {Object.keys(info.getValue()).length}
         </p>
       )
     }),
-    columnHelper.accessor('menu', {
-      id: 'menu',
+
+    columnHelper.accessor('organizations', {
+      id: 'organizations',
       header: () => (
-        <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400"></p>
+        <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+          Orgs
+        </p>
       ),
-      cell: (info) => <CardMenu vertical={true} />
+      cell: (info) => (
+        <p className="text-sm font-medium text-zinc-950 dark:text-white">
+          {JSON.stringify(info.getValue())}
+        </p>
+      )
     })
-  ]; // eslint-disable-next-line
-  const [data, setData] = React.useState(() => [...defaultData]);
-  const [{ pageIndex, pageSize }, setPagination] = React.useState<
-    PaginationState
-  >({
-    pageIndex: 0,
-    pageSize: 11
-  });
+  ]; // eslint-disable-next-line4
+
+  const [data, setData] = React.useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await fetch('http://localhost:3001/get-json').then(
+        (response) => response.json()
+      );
+      const transformedData = Object.entries(data).map(([key, value]) => {
+        return {
+          ...value,
+          name: key
+        };
+      });
+      setData(transformedData);
+    };
+    fetchData();
+  }, []);
+
+  const [{ pageIndex, pageSize }, setPagination] =
+    React.useState<PaginationState>({
+      pageIndex: 0,
+      pageSize: 30
+    });
 
   const pagination = React.useMemo(
     () => ({
@@ -219,42 +245,29 @@ function CheckTable(props: { tableData: any }) {
             </TableHeader>
           ))}
           <TableBody>
-            {table
-              .getRowModel()
-              .rows.slice(0, 7)
-              .map((row) => {
-                return (
-                  <TableRow
-                    key={row.id}
-                    className="px-6 dark:hover:bg-gray-900"
-                  >
-                    {row.getVisibleCells().map((cell) => {
-                      return (
-                        <TableCell
-                          key={cell.id}
-                          className="w-max border-b-[1px] border-zinc-200 py-5 pl-5 pr-4 dark:border-white/10"
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                );
-              })}
+            {table.getRowModel().rows.map((row) => {
+              return (
+                <TableRow key={row.id} className="px-6 dark:hover:bg-gray-900">
+                  {row.getVisibleCells().map((cell) => {
+                    return (
+                      <TableCell
+                        key={cell.id}
+                        className="w-max border-b-[1px] border-zinc-200 py-5 pl-5 pr-4 dark:border-white/10"
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
         {/* pagination */}
         <div className="mt-2 flex h-20 w-full items-center justify-between px-6">
-          {/* left side */}
-          <div className="flex items-center gap-3">
-            <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-              Showing 6 rows per page
-            </p>
-          </div>
-          {/* right side */}
           <div className="flex items-center gap-2">
             <Button
               onClick={() => table.previousPage()}

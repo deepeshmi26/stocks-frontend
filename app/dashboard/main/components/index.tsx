@@ -1,8 +1,8 @@
 /*eslint-disable*/
 'use client';
 
-import MainChart from '@/components/dashboard/main/cards/MainChart';
-import MainDashboardTable from '@/components/dashboard/main/cards/MainDashboardTable';
+import MainChart from './cards/MainChart';
+import MainDashboardTable from './cards/MainDashboardTable';
 import DashboardLayout from '@/components/layout';
 import tableDataUserReports from '@/variables/tableDataUserReports';
 import { User } from '@supabase/supabase-js';
@@ -20,9 +20,9 @@ export default function Settings(props: Props) {
       description="Manage your subscriptions"
     >
       <div className="h-full w-full">
-        <div className="mb-5 flex gap-5 flex-col xl:flex-row w-full">
+        {/* <div className="mb-5 flex gap-5 flex-col xl:flex-row w-full">
           <MainChart />
-        </div>
+        </div> */}
         {/* Conversion and talbes*/}
         <div className="h-full w-full rounded-lg ">
           <MainDashboardTable tableData={tableDataUserReports} />
